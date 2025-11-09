@@ -1,0 +1,3 @@
+fastapi_server/.env
+vectorstores/*
+data/*
