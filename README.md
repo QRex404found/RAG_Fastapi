@@ -41,8 +41,6 @@
 
 ### 🔍 분석 파이프라인 (Analysis Pipeline)
 
-교수님 및 평가자를 위한 핵심 로직 설명입니다.
-
 1.  **Request Ingestion:** Spring 서버로부터 `URL`, `IP Location`, `Safe Browsing Result`를 수신합니다.
 2.  **Fast Filtering (Rule-Based):**
     - `urlparse`를 통해 도메인을 추출하고, 메모리에 로드된 `BLACKLIST`와 대조합니다.
