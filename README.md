@@ -78,7 +78,7 @@ Spring Backend 또는 외부 클라이언트로부터 분석 요청을 처리합
 
 ### 🐳 Deployment (Docker)
 본 서비스는 docker-compose를 통해 데이터베이스와 함께 일괄 배포됩니다.
-```json
+```bash
 # Docker 컨테이너 빌드 및 실행 (ChromaDB 포함)
 docker-compose up -d --build
 ```
