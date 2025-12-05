@@ -23,6 +23,10 @@
   1. **Pre-check:** Python 메모리 상의 블랙리스트 `Set`을 통한 O(1) 속도의 즉시 차단.
   2. **AI Analysis:** 블랙리스트에 없더라도, **Gemini 2.5 Flash** 모델이 URL의 미세한 변형(Typosquatting)과 구조적 위험성을 추론.
 
+### 4. 🐳 Dockerized Infrastructure
+- **Containerization:** 애플리케이션과 의존성을 Docker 이미지로 패키징하여 배포 환경의 일관성을 보장합니다.
+- **Vector DB Orchestration:** 핵심 데이터 저장소인 ChromaDB를 Docker Container로 격리 구동하여 데이터 영속성(Persistence)과 관리 효율성을 확보했습니다.
+
 ---
 
 ## 🛠 Tech Stack
@@ -32,8 +36,9 @@
 | **Language** | **Python 3.9+** | AI 및 데이터 처리에 최적화된 생태계 활용 |
 | **Web Framework** | **FastAPI** | 고성능 API 서버 구축 및 Pydantic 데이터 검증 |
 | **LLM Orchestration** | **LangChain** | LLM 체인 구성, 프롬프트 템플릿 관리 |
-| **LLM Model** | **Google Gemini** | `gemini-2.5-flash` (속도와 추론 능력의 균형) |
-| **Vector/Data** | **Local Knowledge** | 텍스트 기반 지식 베이스 및 Chroma DB 호환 구조 |
+| **LLM Model** | **Google Gemini** | `gemini-2.5-flash`(RAG), `gemini-1.5-flash`(Agent) |
+| **Vector/Data** | **Chroma DB** | Docker 기반으로 구동되는 벡터 데이터베이스 |
+| **Infrastructure** | **Docker** | 서비스 및 데이터베이스 컨테이너화 (docker-compose) |
 
 ---
 
@@ -46,7 +51,8 @@
     - `urlparse`를 통해 도메인을 추출하고, 메모리에 로드된 `BLACKLIST`와 대조합니다.
     - 매칭 시 LLM을 호출하지 않고 즉시 `DANGEROUS` 응답을 반환하여 비용과 시간을 절약합니다.
 3.  **Context Loading:**
-    - `data/` 디렉토리의 최신 보안 지식(`.txt`)을 로드하여 프롬프트 컨텍스트(`{context_text}`)로 구성합니다.
+    - **Docker Container** 상에서 실행 중인 **ChromaDB**로부터 유사한 피싱 사례 및 최신 보안 지식 벡터를 검색합니다.
+    - 검색된 데이터는 프롬프트 컨텍스트({context_text})로 구성됩니다.
 4.  **LLM Reasoning (Chain Execution):**
     - **LangChain**이 구성한 프롬프트를 **Gemini**에 전송합니다.
     - AI는 "블랙리스트 확인 > 화이트리스트 대조 > 타이포스쿼팅 탐지 > URL 구조 분석" 순서로 사고(Chain of Thought)합니다.
@@ -59,7 +65,6 @@
 
 ### 🧪 URL 심층 분석 엔드포인트
 **POST** `/analyze-qr`
-
 Spring Backend 또는 외부 클라이언트로부터 분석 요청을 처리합니다.
 
 **Request (JSON):**
@@ -69,3 +74,12 @@ Spring Backend 또는 외부 클라이언트로부터 분석 요청을 처리합
   "ip_location": "China",
   "safe_browsing_result": "Clean"
 }
+```
+
+### 🐳 Deployment (Docker)
+본 서비스는 docker-compose를 통해 데이터베이스와 함께 일괄 배포됩니다.
+```json
+# Docker 컨테이너 빌드 및 실행 (ChromaDB 포함)
+docker-compose up -d --build
+```
+
